@@ -40,3 +40,43 @@ impl TryFrom<&[u8]> for Bip32Path {
         ))
     }
 }
+
+// Helper function to convert hex string to byte array
+pub fn hex_to_bytes(hex: &str) -> [u8; 32] {
+    let mut bytes = [0u8; 32];
+    for (i, byte) in hex.as_bytes().chunks(2).enumerate() {
+        bytes[i] = u8::from_str_radix(core::str::from_utf8(byte).unwrap_or("00"), 16).unwrap_or(0);
+    }
+    bytes
+}
+
+/// Pads a byte array to 32 bytes (right-aligned) as per Ethereum ABI encoding rules
+pub fn pad_to_32_bytes(input: &[u8]) -> [u8; 32] {
+    let mut padded = [0u8; 32];
+    if input.len() <= 32 {
+        // Copy the input bytes to the end of the padded array (right-aligned)
+        padded[32 - input.len()..].copy_from_slice(input);
+    } else {
+        // If input is longer than 32 bytes (shouldn't happen), truncate
+        padded.copy_from_slice(&input[0..32]);
+    }
+    padded
+}
+
+/// Encodes data according to Ethereum ABI encoding rules
+pub fn abi_encode(elements: &[&[u8]]) -> Vec<u8> {
+    let mut encoded = Vec::new();
+    
+    // Concatenate all elements, padding each to 32 bytes
+    for element in elements {
+        if element.len() == 32 {
+            // Element is already 32 bytes, just add it
+            encoded.extend_from_slice(element);
+        } else {
+            // Pad the element to 32 bytes
+            encoded.extend_from_slice(&pad_to_32_bytes(element));
+        }
+    }
+    
+    encoded
+}

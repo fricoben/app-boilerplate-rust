@@ -5,7 +5,7 @@ from application_client.boilerplate_command_sender import BoilerplateCommandSend
 from application_client.boilerplate_response_unpacker import unpack_get_public_key_response, unpack_sign_tx_response
 from ragger.error import ExceptionRAPDU
 from ragger.navigator import NavIns, NavInsID
-from utils import ROOT_SCREENSHOT_PATH, check_signature_validity
+from utils import check_signature_validity
 
 # In these tests we check the behavior of the device when asked to sign a transaction
 

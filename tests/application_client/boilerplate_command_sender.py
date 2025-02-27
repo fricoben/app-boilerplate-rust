@@ -125,3 +125,27 @@ class BoilerplateCommandSender:
 
     def get_async_response(self) -> Optional[RAPDU]:
         return self.backend.last_async_response
+
+    def get_safe_tx_hash(self, chunk: int, more: bool, data: bytes) -> RAPDU:
+        """Send a Safe transaction hash calculation request.
+
+        Parameters
+        ----------
+        chunk : int
+            The chunk number (0 for first chunk with chain_id and safe_address)
+        more : bool
+            True if more chunks are coming, False for the last chunk
+        data : bytes
+            The data chunk to send
+
+        Returns
+        -------
+        RAPDU
+            The response, containing the Safe transaction hash for the last chunk
+        """
+        p2 = 0x80 if more else 0x00
+        return self.backend.exchange(cla=0xe0,
+                                   ins=0x07,  # INS_SAFE_TX_HASH
+                                   p1=chunk,
+                                   p2=p2,
+                                   data=data)

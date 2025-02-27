@@ -28,6 +28,7 @@ mod handlers {
     pub mod get_public_key;
     pub mod get_version;
     pub mod sign_tx;
+    pub mod safe_tx;
 }
 
 mod settings;
@@ -37,6 +38,7 @@ use handlers::{
     get_public_key::handler_get_public_key,
     get_version::handler_get_version,
     sign_tx::{handler_sign_tx, TxContext},
+    safe_tx::{handler_safe_tx_hash, SafeTxContext},
 };
 use ledger_device_sdk::io::{ApduHeader, Comm, Reply, StatusWords};
 
@@ -58,7 +60,7 @@ const P1_SIGN_TX_MAX: u8 = 0x03;
 
 // Application status words.
 #[repr(u16)]
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, PartialEq, Debug)]
 pub enum AppSW {
     Deny = 0x6985,
     WrongP1P2 = 0x6A86,
@@ -88,6 +90,7 @@ pub enum Instruction {
     GetAppName,
     GetPubkey { display: bool },
     SignTx { chunk: u8, more: bool },
+    SafeTxHash { chunk: u8, more: bool },
 }
 
 impl TryFrom<ApduHeader> for Instruction {
@@ -117,8 +120,15 @@ impl TryFrom<ApduHeader> for Instruction {
                     chunk: value.p1,
                     more: value.p2 == P2_SIGN_TX_MORE,
                 })
-            }
-            (3..=6, _, _) => Err(AppSW::WrongP1P2),
+            },
+            (7, P1_SIGN_TX_START, P2_SIGN_TX_MORE)
+            | (7, 1..=P1_SIGN_TX_MAX, P2_SIGN_TX_LAST | P2_SIGN_TX_MORE) => {
+                Ok(Instruction::SafeTxHash {
+                    chunk: value.p1,
+                    more: value.p2 == P2_SIGN_TX_MORE,
+                })
+            },
+            (3..=8, _, _) => Err(AppSW::WrongP1P2),
             (_, _, _) => Err(AppSW::InsNotSupported),
         }
     }
@@ -154,6 +164,7 @@ extern "C" fn sample_main() {
     let mut comm = Comm::new().set_expected_cla(0xe0);
 
     let mut tx_ctx = TxContext::new();
+    let mut safe_tx_ctx = SafeTxContext::new();
 
     // Initialize reference to Comm instance for NBGL
     // API calls.
@@ -164,7 +175,7 @@ extern "C" fn sample_main() {
     loop {
         let ins: Instruction = comm.next_command();
 
-        let _status = match handle_apdu(&mut comm, &ins, &mut tx_ctx) {
+        let _status = match handle_apdu(&mut comm, &ins, &mut tx_ctx, &mut safe_tx_ctx) {
             Ok(()) => {
                 comm.reply_ok();
                 AppSW::Ok
@@ -178,7 +189,12 @@ extern "C" fn sample_main() {
     }
 }
 
-fn handle_apdu(comm: &mut Comm, ins: &Instruction, ctx: &mut TxContext) -> Result<(), AppSW> {
+fn handle_apdu(
+    comm: &mut Comm, 
+    ins: &Instruction, 
+    ctx: &mut TxContext,
+    safe_ctx: &mut SafeTxContext,
+) -> Result<(), AppSW> {
     match ins {
         Instruction::GetAppName => {
             comm.append(env!("CARGO_PKG_NAME").as_bytes());
@@ -187,5 +203,6 @@ fn handle_apdu(comm: &mut Comm, ins: &Instruction, ctx: &mut TxContext) -> Resul
         Instruction::GetVersion => handler_get_version(comm),
         Instruction::GetPubkey { display } => handler_get_public_key(comm, *display),
         Instruction::SignTx { chunk, more } => handler_sign_tx(comm, *chunk, *more, ctx),
+        Instruction::SafeTxHash { chunk, more } => handler_safe_tx_hash(comm, *chunk, *more, safe_ctx),
     }
 }
