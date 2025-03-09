@@ -38,7 +38,7 @@ use handlers::{
     get_public_key::handler_get_public_key,
     get_version::handler_get_version,
     sign_tx::{handler_sign_tx, TxContext},
-    safe_tx::{handler_safe_tx_hash, SafeTxContext},
+    safe_tx::{get_safe_tx_hash, SafeTxContext},
 };
 use ledger_device_sdk::io::{ApduHeader, Comm, Reply, StatusWords};
 
@@ -203,6 +203,6 @@ fn handle_apdu(
         Instruction::GetVersion => handler_get_version(comm),
         Instruction::GetPubkey { display } => handler_get_public_key(comm, *display),
         Instruction::SignTx { chunk, more } => handler_sign_tx(comm, *chunk, *more, ctx),
-        Instruction::SafeTxHash { chunk, more } => handler_safe_tx_hash(comm, *chunk, *more, safe_ctx),
+        Instruction::SafeTxHash { chunk, more } => get_safe_tx_hash(comm, *chunk, *more, safe_ctx),
     }
 }

@@ -32,13 +32,13 @@ pub fn ui_display_pk(addr: &[u8]) -> Result<bool, AppSW> {
 
     // Load glyph from 64x64 4bpp gif file with include_gif macro. Creates an NBGL compatible glyph.
     #[cfg(any(target_os = "stax", target_os = "flex"))]
-    const FERRIS: NbglGlyph = NbglGlyph::from_include(include_gif!("crab_64x64.gif", NBGL));
+    const FERRIS: NbglGlyph = NbglGlyph::from_include(include_gif!("safe_64x64.gif", NBGL));
     #[cfg(any(target_os = "nanosplus", target_os = "nanox"))]
-    const FERRIS: NbglGlyph = NbglGlyph::from_include(include_gif!("crab_16x16.gif", NBGL));
+    const FERRIS: NbglGlyph = NbglGlyph::from_include(include_gif!("safe_16x16.gif", NBGL));
 
     // Display the address confirmation screen.
     Ok(NbglAddressReview::new()
         .glyph(&FERRIS)
-        .verify_str("Verify CRAB address")
+        .verify_str("Verify ETH address")
         .show(&addr_hex))
 }

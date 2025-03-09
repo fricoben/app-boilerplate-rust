@@ -1,6 +1,6 @@
 {
     "ledgerDevTools.appSettings": {
-        "selectedDevice": "Stax",
+        "selectedDevice": "Nano X",
         "testsList": [
             "test_app_mainmenu",
             "test_app_name",
@@ -12,11 +12,11 @@
             "test_get_public_key_confirm_accepted",
             "test_get_public_key_confirm_refused",
             "test_get_safe_tx_hash",
-            "test_manual_safe_tx_review",
             "test_sign_tx_short_tx",
             "test_sign_tx_short_tx_no_memo",
             "test_sign_tx_long_tx",
             "test_sign_tx_refused",
+            "test_sign_safe_tx",
             "test_version"
         ],
         "selectedUseCase": "release"

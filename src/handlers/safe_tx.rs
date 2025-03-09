@@ -143,7 +143,7 @@ impl SafeTxContext {
     }
 }
 
-pub fn handler_safe_tx_hash(
+pub fn get_safe_tx_hash(
     comm: &mut Comm,
     chunk: u8,
     more: bool,

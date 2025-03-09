@@ -24,7 +24,7 @@ debug = ["ledger_device_sdk/debug"]
 curve = ["secp256k1"]
 flags = "0"
 path = ["44'/1'"]
-name = "Rust Boilerplate"
+name = "Safe"
 
 [package.metadata.ledger.nanox]
 icon = "crab_14x14.gif"
